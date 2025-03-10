@@ -7,17 +7,17 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
-  # devise_for :users, controllers: {
-  #   sessions: 'users/sessions',
-  #   registrations: 'users/registrations'
-  # }
+  devise_for :users, controllers: {
+    sessions: 'users/sessions',
+    registrations: 'users/registrations'
+  }
 
   namespace :api do
     namespace :v1 do
-      devise_for :users, controllers: {
-        registrations: "api/v1/registrations",
-        sessions: "api/v1/sessions"
-      }
+      # devise_for :users, controllers: {
+      #   registrations: "api/v1/registrations",
+      #   sessions: "api/v1/sessions"
+      # }
       resources :tasks
       resources :users, only: [:index, :show, :destroy]
     end
