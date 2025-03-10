@@ -1,15 +1,22 @@
 module Api
   module V1
     class UsersController < ApplicationController
+      before_action :authenticate_user!
       before_action :set_user, only: [:show, :destroy]
+
       def index
         @users = policy_scope(User)
+
+        if params[:q].present?
+          @users = @users.where('users.email ILIKE ?', "%#{params[:q]}%")
+        end
         render json: @users.map { |u| user_response(u) }
       end
 
       def show
         authorize @user
-        render json: user_response(@user)
+        render json: @user.as_json(include: { tasks: { only: [:id, :title, :description, :due_date, :assigned_to_id, :status] } }), status: :ok
+        # render json: user_response(@user)
       end
 
       def destroy
@@ -21,7 +28,6 @@ module Api
       private
 
       def set_user
-        binding.pry
         @user = User.find(params[:id])
       end
 

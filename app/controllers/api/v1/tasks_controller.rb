@@ -1,12 +1,28 @@
 module Api
   module V1
     class TasksController < ApplicationController
+      before_action :authenticate_user!
       before_action :set_task, only: [:show, :update, :destroy]
       # after_action :verify_authorized, except: :index
       # after_action :verify_policy_scoped, only: :index
 
       def index
-        @tasks = policy_scope(Task)
+        @tasks = policy_scope(Task).order(created_at: :desc)
+
+        if params[:q].present?
+          @tasks = @tasks.joins(:assigned_to).where('users.email ILIKE ?', "%#{params[:q]}%")
+        end
+
+        if params[:status].present? && %w[pending in_progress completed].include?(params[:status])
+          @tasks = @tasks.where(status: params[:status])
+        end
+
+        if params[:start_date].present? || params[:end_date].present?
+          start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : Date.new(2000, 1, 1)
+          end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : Date.current.end_of_day
+          @tasks = @tasks.where(due_date: start_date..end_date)
+        end
+
         render json: @tasks
       end
 
@@ -18,15 +34,16 @@ module Api
       def create
         @task = Task.new(task_params)
         authorize @task
+        @task.assigned_by = current_user
         if @task.save
           render json: @task, status: :created
           # TaskMailer.assigned_task(@task.assigned_to, @task).deliver_later
           ActionCable.server.broadcast(
-            "tasks_#{@task.assigned_to_id}",  # First argument: channel name
-            {                                 # Second argument: data hash
+            "tasks_#{@task.assigned_to_id}",
+            {
               action: 'task_assigned',
               task: task_response(@task),
-              message: "Task '#{@task.title}' has been assigned to you by Admin"
+              message: "Task '#{@task.title}' has been assigned to you by #{@task.assigned_by.email}"
             }
           )
         else
@@ -55,13 +72,18 @@ module Api
         @task = Task.find(params[:id])
       end
 
+      def load_tasks
+        @tasks = policy_scope(Task).order(created_at: :desc)
+      end
+
       def task_params
-        params.require(:task).permit(:title, :description, :status, :due_date, :assigned_to_id)
+        params.require(:task).permit(:title, :description, :status, :due_date, :assigned_to_id, :assigned_by_id)
       end
 
       def task_response(task)
         { id: task.id, title: task.title }
       end
+
     end
   end
 end

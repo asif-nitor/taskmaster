@@ -25,7 +25,7 @@ class TaskPolicy < ApplicationPolicy
       if user&.admin? || user&.manager?
         scope.all
       elsif user.present?
-        scope.where(assigned_to: user)
+        scope.where(assigned_to_id: user.id)
       else
         scope.none
       end
