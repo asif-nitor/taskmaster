@@ -1,16 +1,23 @@
 class TaskMailer < ApplicationMailer
   default from: 'notifications@example.com'
 
-  def pending_tasks_notification(user, tasks)
-    @user = user
-    @tasks = tasks
-    mail(to: @user.email, subject: 'Your Pending Tasks - Daily Reminder')
+  def pending_tasks_notification(task)
+    @task = task
+    @user = task.assigned_to
+    mail(to: @user.email, subject: "Reminder: '#{@task.title}' is Still Pending")
   end
 
-  def assigned_task(user, tasks)
-    @user = user
-    @tasks = tasks
+  def assigned_task(task)
+    @task = task
+    @user = task.assigned_to
     mail(to: @user.email, subject: 'New Task Assigned')
+  end
+
+   def status_updated_notification(task)
+    @task = task
+    @user = task.assigned_to
+    @assignee = task.assigned_by # The admin to notify
+    mail(to: @assignee.email, subject: "Task '#{@task.title}' Status Updated by #{@user.email}")
   end
 
 end

@@ -1,8 +1,14 @@
-<h1>Hello, <%= @user.email %></h1>
-<p>You have the following pending tasks:</p>
+<h1>Hello <%= @user.email %>,</h1>
+<p>This is a reminder about your pending task:</p>
 <ul>
-  <%# @tasks.each do |task| %>
-    <li>This is the testing of mail template</li>
-  <%# end %>
+  <li>
+    <strong>Title:</strong> <%= @task.title %><br>
+    <strong>Description:</strong> <%= @task.description || "N/A" %><br>
+    <strong>Status:</strong> <%= @task.status %><br>
+    <strong>Due Date:</strong> <%= @task.due_date.strftime('%Y-%m-%d') %>
+  </li>
 </ul>
-<p>Please review them in the Task Manager.</p>
+
+<p>Please complete this task before the due date approaches.</p>
+
+<p>Thanks,<br>Task Manager Team</p>

@@ -5,7 +5,7 @@ class Task < ApplicationRecord
 
   enum status: %w{pending in_progress completed}
   validates :title, :description, :due_date, presence: true
-  scope :task_date, -> { (where("due_date > ?", Date.today)) }
+  scope :notify_pending_task, -> { (where('due_date > ? AND due_date <= ?', Date.today, Date.today + 25.days)) }
 
   def as_json(options = {})
     super(options.merge(
