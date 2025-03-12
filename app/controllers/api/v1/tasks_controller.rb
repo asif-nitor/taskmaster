@@ -13,7 +13,7 @@ module Api
           @tasks = @tasks.joins(:assigned_to).where('users.email ILIKE ?', "%#{params[:q]}%")
         end
 
-        if params[:status].present? && %w[pending in_progress completed].include?(params[:status])
+        if params[:status].present?
           @tasks = @tasks.where(status: params[:status])
         end
 
@@ -53,11 +53,34 @@ module Api
 
       def update
         authorize @task
-        if @task.update(task_params)
+        if @task.update(update_params)
           render json: @task
+          if current_user.user?
+            ActionCable.server.broadcast(
+              "tasks_#{@task.assigned_by_id}",
+              {
+                action: 'status_updated',
+                task: task_response(@task),
+                message: "The status of task chnage to '#{@task.status}' by #{@task.assigned_to.email}"
+              }
+            )
+          else
+            ActionCable.server.broadcast(
+              "tasks_#{@task.assigned_to_id}",
+              {
+                action: 'task_updated',
+                task: task_response(@task),
+                message: "Task updated by #{current_user.email}"
+              }
+            )
+          end
         else
           render json: @task.errors, status: :unprocessable_entity
         end
+        #for testing purpose if user is force at invalid status
+        rescue ArgumentError => e
+          @task.errors.add(:status, e.message)
+          render json: @task.errors, status: :unprocessable_entity
       end
 
       def destroy
@@ -72,16 +95,22 @@ module Api
         @task = Task.find(params[:id])
       end
 
-      def load_tasks
-        @tasks = policy_scope(Task).order(created_at: :desc)
-      end
-
       def task_params
         params.require(:task).permit(:title, :description, :status, :due_date, :assigned_to_id, :assigned_by_id)
       end
 
+      def update_params
+        params.require(:task).permit(:title, :description, :status, :due_date)
+      end
+
       def task_response(task)
-        { id: task.id, title: task.title }
+        { id: task.id,
+          title: task.title,
+          description: task.description,
+          status: task.status,
+          due_date: task.due_date&.iso8601,
+          assigned_to: { email: task.assigned_to&.email }
+        }
       end
 
     end

@@ -6,10 +6,6 @@ class ApplicationController < ActionController::API
 
   protected
 
-  def pundit_user
-    current_user
-  end
-
   def user_not_authorized
     render json: { alert: ['You are not authorized to perform this operation.'] }, status: :forbidden
   end

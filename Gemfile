@@ -59,6 +59,7 @@ group :development, :test do
   gem 'shoulda-callback-matchers', '~> 1.1', '>= 1.1.4'
   gem 'faker'
   gem 'rails-controller-testing'
+  gem 'database_cleaner-active_record'
 end
 
 group :development do
