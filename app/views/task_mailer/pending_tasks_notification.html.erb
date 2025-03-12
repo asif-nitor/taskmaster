@@ -5,7 +5,7 @@
     <strong>Title:</strong> <%= @task.title %><br>
     <strong>Description:</strong> <%= @task.description || "N/A" %><br>
     <strong>Status:</strong> <%= @task.status %><br>
-    <strong>Due Date:</strong> <%= @task.due_date.strftime('%Y-%m-%d') %>
+    <strong>Due Date:</strong> <%= @task.due_date.strftime('%d-%m-%Y') %>
   </li>
 </ul>
 
