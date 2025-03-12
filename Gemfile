@@ -46,6 +46,7 @@ gem "pundit", "~> 2.3"
 gem "sidekiq", "~> 7.2"
 
 #writing and deploying cron jobs.
+gem 'sidekiq-scheduler'
 gem 'whenever', require: false
 
 group :development, :test do
