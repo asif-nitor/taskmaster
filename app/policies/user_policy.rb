@@ -1,11 +1,11 @@
 class UserPolicy < ApplicationPolicy
 
   def index?
-    admin?
+    admin? || manager?
   end
 
   def show?
-    admin?
+    admin? || manager?
   end
 
   def destroy?
@@ -14,7 +14,7 @@ class UserPolicy < ApplicationPolicy
 
   class Scope < Scope
     def resolve
-      if user&.admin?
+      if user&.admin? || user&.manager?
         scope.all
       else
         scope.none
@@ -26,5 +26,9 @@ class UserPolicy < ApplicationPolicy
 
   def admin?
     user&.admin?
+  end
+
+  def manager?
+    user&.manager?
   end
 end

@@ -11,7 +11,7 @@ class User < ApplicationRecord
   enum role: %w{user manager admin}
 
   def jwt_payload
-    super
+    super.merge('sub' => id)
   end
 
   self::roles.keys.each do |k|
