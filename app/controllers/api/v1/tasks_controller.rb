@@ -87,6 +87,14 @@ module Api
       def destroy
         authorize @task
         @task.destroy
+        ActionCable.server.broadcast(
+          "tasks_#{@task.assigned_to_id}",
+          {
+            action: 'deleted',
+            task: task_response(@task),
+            message: "The deleted by #{current_user.email}"
+          }
+        )
         head :no_content
       end
 
