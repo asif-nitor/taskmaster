@@ -98,7 +98,7 @@ RSpec.describe "Api::V1::TasksController", type: :request do
           title: Faker::Lorem.sentence(word_count: 4),
           description: Faker::Lorem.paragraph,
           status: "pending",
-          due_date: Faker::Date.forward(days: 20).to_s, # Convert to string for JSON
+          due_date: Faker::Date.forward(days: 20).to_s,
           assigned_to_id: user.id,
           assigned_by_id: admin.id
         }
