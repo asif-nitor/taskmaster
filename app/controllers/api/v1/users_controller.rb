@@ -5,7 +5,7 @@ module Api
       before_action :set_user, only: [:show, :destroy]
 
       def index
-        @users = policy_scope(User)
+        @users = policy_scope(User).user
 
         if params[:q].present?
           @users = @users.where('users.email ILIKE ?', "%#{params[:q]}%")
