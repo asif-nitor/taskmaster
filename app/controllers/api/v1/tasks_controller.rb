@@ -37,7 +37,6 @@ module Api
         @task.assigned_by = current_user
         if @task.save
           render json: @task, status: :created
-          TaskMailer.assigned_task(@task).deliver_later
           ActionCable.server.broadcast(
             "tasks_#{@task.assigned_to_id}",
             {
@@ -46,6 +45,7 @@ module Api
               message: "Task '#{@task.title}' has been assigned to you by #{@task.assigned_by.email}"
             }
           )
+          TaskMailer.assigned_task(@task).deliver_later
         else
           render json: @task.errors, status: :unprocessable_entity
         end
@@ -56,7 +56,6 @@ module Api
         if @task.update(update_params)
           render json: @task
           if current_user.user?
-            TaskMailer.status_updated_notification(@task).deliver_later
             ActionCable.server.broadcast(
               "tasks_#{@task.assigned_by_id}",
               {
@@ -65,6 +64,7 @@ module Api
                 message: "The status of task chnage to '#{@task.status}' by #{@task.assigned_to.email}"
               }
             )
+            TaskMailer.status_updated_notification(@task).deliver_later
           else
             ActionCable.server.broadcast(
               "tasks_#{@task.assigned_to_id}",
